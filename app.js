@@ -114,6 +114,41 @@ function initApp() {
     const targetTab = urlParams.get("tab");
     const autoCalc = urlParams.get("calc");
     
+    // Parse slider parameters if present
+    const pGstRev = urlParams.get("gst_rev");
+    const pGstFile = urlParams.get("gst_file");
+    const pUpiCnt = urlParams.get("upi_cnt");
+    const pUpiVol = urlParams.get("upi_vol");
+    const pEpfoEmp = urlParams.get("epfo_emp");
+    const pEpfoDep = urlParams.get("epfo_dep");
+    const pBankBal = urlParams.get("bank_bal");
+
+    if (pGstRev) {
+        document.getElementById("sim-gst-revenue").value = pGstRev;
+        document.getElementById("val-gst-revenue").textContent = `₹${pGstRev} Lakhs`;
+    }
+    if (pGstFile) {
+        document.getElementById("sim-gst-filing").value = pGstFile;
+    }
+    if (pUpiCnt) {
+        document.getElementById("sim-upi-count").value = pUpiCnt;
+        document.getElementById("val-upi-count").textContent = `${pUpiCnt} txn`;
+    }
+    if (pUpiVol) {
+        document.getElementById("sim-upi-volatility").value = pUpiVol;
+    }
+    if (pEpfoEmp) {
+        document.getElementById("sim-epfo-employees").value = pEpfoEmp;
+        document.getElementById("val-epfo-employees").textContent = `${pEpfoEmp} staff`;
+    }
+    if (pEpfoDep) {
+        document.getElementById("sim-epfo-deposit").value = pEpfoDep;
+    }
+    if (pBankBal) {
+        document.getElementById("sim-bank-balance").value = pBankBal;
+        document.getElementById("val-bank-balance").textContent = `₹${pBankBal} Lakhs`;
+    }
+
     if (autoCalc === "true") {
         calculateScore();
     }

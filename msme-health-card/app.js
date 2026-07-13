@@ -9,6 +9,49 @@ document.addEventListener("DOMContentLoaded", () => {
 let currentScore = 785;
 let cashFlowChart = null;
 
+// Static Mock Datasets for Client-side Fallbacks (Wow Factor: works fully on GitHub Pages!)
+const STATIC_SAMPLES = {
+    gst: {
+        "legalName": "Doremon Crafts Private Limited",
+        "gstin": "27AAACD9921A1Z0",
+        "filings": [
+            {"month": "Jan 2026", "status": "FILLED", "delay_days": 0, "taxable_supplies_value": 1850000},
+            {"month": "Feb 2026", "status": "FILLED", "delay_days": 0, "taxable_supplies_value": 1920000},
+            {"month": "Mar 2026", "status": "FILLED", "delay_days": 0, "taxable_supplies_value": 1780000},
+            {"month": "Apr 2026", "status": "FILLED", "delay_days": 0, "taxable_supplies_value": 2100000},
+            {"month": "May 2026", "status": "FILLED", "delay_days": 0, "taxable_supplies_value": 1950000},
+            {"month": "Jun 2026", "status": "FILLED", "delay_days": 0, "taxable_supplies_value": 1800000}
+        ]
+    },
+    upi: `Date,TransactionID,VPA,Amount,Type
+2026-06-01,TXN10029,cust1@okaxis,4500,CREDIT
+2026-06-02,TXN10030,vendor@paytm,1200,DEBIT
+2026-06-02,TXN10031,cust2@okhdfc,8900,CREDIT
+2026-06-05,TXN10032,cust3@oksbi,15000,CREDIT
+2026-06-08,TXN10033,taxdept@gov,4500,DEBIT
+2026-06-10,TXN10034,cust4@okicici,6200,CREDIT
+2026-06-12,TXN10035,cust5@okaxis,9200,CREDIT
+2026-06-15,TXN10036,supplier@ybl,11000,DEBIT
+2026-06-18,TXN10037,cust6@okaxis,3400,CREDIT
+2026-06-20,TXN10038,cust7@okaxis,5800,CREDIT
+2026-06-22,TXN10039,rent@hdfc,22000,DEBIT
+2026-06-25,TXN10040,cust8@okaxis,7300,CREDIT
+2026-06-28,TXN10041,cust9@okaxis,12500,CREDIT
+2026-06-30,TXN10042,cust10@okaxis,8200,CREDIT`,
+    epfo: {
+        "employerName": "Doremon Crafts Private Limited",
+        "activeSubscribers": 24,
+        "contributions": [
+            {"month": "Jan 2026", "delay_days": 0},
+            {"month": "Feb 2026", "delay_days": 1},
+            {"month": "Mar 2026", "delay_days": 0},
+            {"month": "Apr 2026", "delay_days": 0},
+            {"month": "May 2026", "delay_days": 2},
+            {"month": "Jun 2026", "delay_days": 0}
+        ]
+    }
+};
+
 function initApp() {
     // 1. Tab Switching Logic
     const navItems = document.querySelectorAll(".nav-item");
@@ -35,11 +78,9 @@ function initApp() {
         item.addEventListener("click", () => {
             const tabId = item.getAttribute("data-tab");
             
-            // Toggle nav active class
             navItems.forEach(nav => nav.classList.remove("active"));
             item.classList.add("active");
             
-            // Toggle tab display
             tabContents.forEach(content => {
                 content.classList.remove("active");
                 if (content.id === tabId) {
@@ -47,32 +88,25 @@ function initApp() {
                 }
             });
 
-            // Update Page Headers
             if (tabMetadata[tabId]) {
                 pageTitle.textContent = tabMetadata[tabId].title;
                 pageDesc.textContent = tabMetadata[tabId].desc;
             }
 
-            // If entering dashboard, trigger chart redraw
             if (tabId === "tab-dashboard") {
                 updateDashboardCharts();
             }
         });
     });
 
-    // 2. Input Sliders Event Listeners (Live Value Updates)
     setupSliders();
-
-    // 3. File Uploads Listeners
     setupFileUploads();
 
-    // 4. Calculator Button Trigger
     const btnCalculate = document.getElementById("btn-calculate");
     btnCalculate.addEventListener("click", () => {
         calculateScore();
     });
 
-    // 5. API Integration Flow Handler
     setupApiSimulation();
 }
 
@@ -105,7 +139,6 @@ function setupThemeToggle() {
     const themeToggleBtn = document.getElementById("theme-toggle");
     if (!themeToggleBtn) return;
 
-    // Load theme preference from localStorage or default to light
     const savedTheme = localStorage.getItem("theme") || "light";
     document.documentElement.setAttribute("data-theme", savedTheme);
     updateThemeIcon(savedTheme);
@@ -119,7 +152,6 @@ function setupThemeToggle() {
         updateThemeIcon(newTheme);
         logTerminal(`[SYSTEM] Interface theme toggled to: ${newTheme.toUpperCase()}`);
 
-        // Update Chart colors dynamically if visible
         if (cashFlowChart) {
             applyThemeToChart(newTheme);
         }
@@ -133,7 +165,7 @@ function updateThemeIcon(theme) {
     } else {
         iconContainer.innerHTML = '<i data-lucide="moon"></i>';
     }
-    lucide.createIcons(); // refresh lucide icons
+    lucide.createIcons();
 }
 
 function applyThemeToChart(theme) {
@@ -161,34 +193,31 @@ function setupFileUploads() {
         if (!file) return;
         
         logTerminal(`[INGESTION] Uploading GST invoice log file: ${file.name}...`);
-        const formData = new FormData();
-        formData.append("file", file);
-
-        fetch("/api/upload-gst", {
-            method: "POST",
-            body: formData
-        })
-        .then(res => {
-            if (!res.ok) throw new Error("Parser failed to read GSTR layout.");
-            return res.json();
-        })
-        .then(data => {
-            document.getElementById("sim-gst-revenue").value = data.gst_revenue;
-            document.getElementById("val-gst-revenue").textContent = `₹${data.gst_revenue} Lakhs`;
+        const reader = new FileReader();
+        reader.onload = (event) => {
+            const fileContent = event.target.result;
             
-            let compRating = "poor";
-            if (data.gst_compliance >= 0.98) compRating = "perfect";
-            else if (data.gst_compliance >= 0.90) compRating = "good";
-            else if (data.gst_compliance >= 0.70) compRating = "average";
-            document.getElementById("sim-gst-filing").value = compRating;
-
-            document.getElementById("msme-legal-title").textContent = data.business_name;
-
-            logTerminal(`[INGESTION] GST parse SUCCESS. Business: '${data.business_name}', Avg Sales: ₹${data.gst_revenue}L, Compliance: ${Math.round(data.gst_compliance * 100)}%.`);
-        })
-        .catch(err => {
-            logTerminal(`[ERROR] GST file ingestion failed: ${err.message}`);
-        });
+            // Try uploading to backend, fallback to client-side parsing
+            const formData = new FormData();
+            formData.append("file", file);
+            
+            fetch("/api/upload-gst", { method: "POST", body: formData })
+            .then(res => {
+                if (!res.ok) throw new Error("Backend parser offline.");
+                return res.json();
+            })
+            .then(data => updateGstUI(data))
+            .catch(() => {
+                logTerminal(`[SYSTEM] Backend offline. Running client-side GST parser fallback...`);
+                try {
+                    const parsed = parseGstClient(fileContent);
+                    updateGstUI(parsed);
+                } catch(err) {
+                    logTerminal(`[ERROR] Client-side GST parse failed: ${err.message}`);
+                }
+            });
+        };
+        reader.readAsText(file);
     });
 
     // UPI Upload
@@ -198,31 +227,29 @@ function setupFileUploads() {
         if (!file) return;
         
         logTerminal(`[INGESTION] Uploading UPI transactions statement: ${file.name}...`);
-        const formData = new FormData();
-        formData.append("file", file);
+        const reader = new FileReader();
+        reader.onload = (event) => {
+            const fileContent = event.target.result;
+            const formData = new FormData();
+            formData.append("file", file);
 
-        fetch("/api/upload-upi", {
-            method: "POST",
-            body: formData
-        })
-        .then(res => {
-            if (!res.ok) throw new Error("Parser failed to read UPI schema.");
-            return res.json();
-        })
-        .then(data => {
-            document.getElementById("sim-upi-count").value = data.upi_count;
-            document.getElementById("val-upi-count").textContent = `${data.upi_count} txn`;
-
-            let vol = "high";
-            if (data.upi_volatility <= 0.3) vol = "low";
-            else if (data.upi_volatility <= 0.6) vol = "medium";
-            document.getElementById("sim-upi-volatility").value = vol;
-
-            logTerminal(`[INGESTION] UPI statement parse SUCCESS. Transactions found: ${data.upi_count}, Volatility Coefficient: ${data.upi_volatility}.`);
-        })
-        .catch(err => {
-            logTerminal(`[ERROR] UPI file ingestion failed: ${err.message}`);
-        });
+            fetch("/api/upload-upi", { method: "POST", body: formData })
+            .then(res => {
+                if (!res.ok) throw new Error("Backend parser offline.");
+                return res.json();
+            })
+            .then(data => updateUpiUI(data))
+            .catch(() => {
+                logTerminal(`[SYSTEM] Backend offline. Running client-side UPI parser fallback...`);
+                try {
+                    const parsed = parseUpiClient(fileContent);
+                    updateUpiUI(parsed);
+                } catch(err) {
+                    logTerminal(`[ERROR] Client-side UPI parse failed: ${err.message}`);
+                }
+            });
+        };
+        reader.readAsText(file);
     });
 
     // EPFO Upload
@@ -232,53 +259,153 @@ function setupFileUploads() {
         if (!file) return;
         
         logTerminal(`[INGESTION] Uploading EPFO wage registry logs: ${file.name}...`);
-        const formData = new FormData();
-        formData.append("file", file);
+        const reader = new FileReader();
+        reader.onload = (event) => {
+            const fileContent = event.target.result;
+            const formData = new FormData();
+            formData.append("file", file);
 
-        fetch("/api/upload-epfo", {
-            method: "POST",
-            body: formData
-        })
-        .then(res => {
-            if (!res.ok) throw new Error("Parser failed to read EPFO registry.");
-            return res.json();
-        })
-        .then(data => {
-            document.getElementById("sim-epfo-employees").value = data.epfo_employees;
-            document.getElementById("val-epfo-employees").textContent = `${data.epfo_employees} staff`;
-
-            let dep = data.epfo_compliance >= 0.9 ? "regular" : "irregular";
-            document.getElementById("sim-epfo-deposit").value = dep;
-
-            logTerminal(`[INGESTION] EPFO parse SUCCESS. Active Subscribers: ${data.epfo_employees}, PF Payment punctuality: ${Math.round(data.epfo_compliance * 100)}%.`);
-        })
-        .catch(err => {
-            logTerminal(`[ERROR] EPFO file ingestion failed: ${err.message}`);
-        });
+            fetch("/api/upload-epfo", { method: "POST", body: formData })
+            .then(res => {
+                if (!res.ok) throw new Error("Backend parser offline.");
+                return res.json();
+            })
+            .then(data => updateEpfoUI(data))
+            .catch(() => {
+                logTerminal(`[SYSTEM] Backend offline. Running client-side EPFO parser fallback...`);
+                try {
+                    const parsed = parseEpfoClient(fileContent);
+                    updateEpfoUI(parsed);
+                } catch(err) {
+                    logTerminal(`[ERROR] Client-side EPFO parse failed: ${err.message}`);
+                }
+            });
+        };
+        reader.readAsText(file);
     });
+}
+
+// UI Updaters for parsed files
+function updateGstUI(data) {
+    document.getElementById("sim-gst-revenue").value = data.gst_revenue;
+    document.getElementById("val-gst-revenue").textContent = `₹${data.gst_revenue} Lakhs`;
+    
+    let compRating = "poor";
+    if (data.gst_compliance >= 0.98) compRating = "perfect";
+    else if (data.gst_compliance >= 0.90) compRating = "good";
+    else if (data.gst_compliance >= 0.70) compRating = "average";
+    document.getElementById("sim-gst-filing").value = compRating;
+    document.getElementById("msme-legal-title").textContent = data.business_name;
+
+    logTerminal(`[INGESTION] GST parse success. Business: '${data.business_name}', Avg Sales: ₹${data.gst_revenue}L, Compliance: ${Math.round(data.gst_compliance * 100)}%.`);
+}
+
+function updateUpiUI(data) {
+    document.getElementById("sim-upi-count").value = data.upi_count;
+    document.getElementById("val-upi-count").textContent = `${data.upi_count} txn`;
+
+    let vol = "high";
+    if (data.upi_volatility <= 0.3) vol = "low";
+    else if (data.upi_volatility <= 0.6) vol = "medium";
+    document.getElementById("sim-upi-volatility").value = vol;
+
+    logTerminal(`[INGESTION] UPI parse success. Transactions found: ${data.upi_count}, Volatility: ${data.upi_volatility}.`);
+}
+
+function updateEpfoUI(data) {
+    document.getElementById("sim-epfo-employees").value = data.epfo_employees;
+    document.getElementById("val-epfo-employees").textContent = `${data.epfo_employees} staff`;
+
+    let dep = data.epfo_compliance >= 0.9 ? "regular" : "irregular";
+    document.getElementById("sim-epfo-deposit").value = dep;
+
+    logTerminal(`[INGESTION] EPFO parse success. Subscribers: ${data.epfo_employees}, PF regular: ${Math.round(data.epfo_compliance * 100)}%.`);
+}
+
+// Client-side file parsers (standalone fallbacks)
+function parseGstClient(text) {
+    const data = JSON.parse(text);
+    const filings = data.filings || [];
+    const sales = filings.map(f => f.taxable_supplies_value || 0);
+    const avgRevenue = sales.length ? (sales.reduce((a,b)=>a+b, 0) / sales.length / 100000) : 15;
+    const onTime = filings.filter(f => f.status === 'FILLED' && (f.delay_days || 0) <= 0).length;
+    const compliance = filings.length ? (onTime / filings.length) : 0.8;
+    return {
+        gst_revenue: Math.min(50, Math.max(2, parseFloat(avgRevenue.toFixed(1)))),
+        gst_compliance: compliance,
+        business_name: data.legalName || "Mock MSME Business"
+    };
+}
+
+function parseUpiClient(text) {
+    const lines = text.split("\n");
+    const headers = lines[0].split(",");
+    const amountIdx = headers.indexOf("Amount");
+    const typeIdx = headers.indexOf("Type");
+    
+    let creditAmounts = [];
+    for(let i=1; i<lines.length; i++) {
+        if (!lines[i].trim()) continue;
+        const cols = lines[i].split(",");
+        const type = cols[typeIdx] ? cols[typeIdx].trim().toUpperCase() : "CREDIT";
+        const amount = parseFloat(cols[amountIdx]);
+        if (type === "CREDIT" && !isNaN(amount)) {
+            creditAmounts.push(amount);
+        }
+    }
+    const count = creditAmounts.length;
+    let volatility = 0.3;
+    if (count > 1) {
+        const mean = creditAmounts.reduce((a,b)=>a+b,0) / count;
+        const variance = creditAmounts.reduce((a,b)=>a + Math.pow(b - mean, 2), 0) / (count - 1);
+        const stdDev = Math.sqrt(variance);
+        volatility = mean > 0 ? (stdDev / mean) : 0.5;
+    }
+    return {
+        upi_count: Math.min(1000, Math.max(10, count * 4)),
+        upi_volatility: Math.min(0.9, Math.max(0.1, volatility))
+    };
+}
+
+function parseEpfoClient(text) {
+    const data = JSON.parse(text);
+    const employees = data.activeSubscribers || 24;
+    const contributions = data.contributions || [];
+    const onTime = contributions.filter(c => (c.delay_days || 0) <= 3).length;
+    const compliance = contributions.length ? (onTime / contributions.length) : 0.9;
+    return {
+        epfo_employees: employees,
+        epfo_compliance: compliance
+    };
 }
 
 window.downloadSample = function(type) {
     logTerminal(`[SYSTEM] Initiating sample file download for ${type.toUpperCase()}...`);
+    
     fetch(`/api/samples/${type}`)
         .then(res => {
             if (type === 'upi') return res.text();
             return res.json().then(j => JSON.stringify(j, null, 2));
         })
-        .then(content => {
-            const blob = new Blob([content], { type: type === 'upi' ? 'text/csv' : 'application/json' });
-            const link = document.createElement('a');
-            link.href = URL.createObjectURL(blob);
-            link.download = `sample_${type}.${type === 'upi' ? 'csv' : 'json'}`;
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
-            logTerminal(`[SYSTEM] Sample ${type.toUpperCase()} file generated and downloaded.`);
-        })
-        .catch(err => {
-            logTerminal(`[ERROR] Failed to fetch sample file: ${err.message}`);
+        .then(content => downloadBlob(content, type))
+        .catch(() => {
+            // Local fallback if server offline
+            logTerminal(`[SYSTEM] Server offline. Accessing local static sample assets for ${type.toUpperCase()}...`);
+            const content = type === 'upi' ? STATIC_SAMPLES.upi : JSON.stringify(STATIC_SAMPLES[type], null, 2);
+            downloadBlob(content, type);
         });
 };
+
+function downloadBlob(content, type) {
+    const blob = new Blob([content], { type: type === 'upi' ? 'text/csv' : 'application/json' });
+    const link = document.createElement('a');
+    link.href = URL.createObjectURL(blob);
+    link.download = `sample_${type}.${type === 'upi' ? 'csv' : 'json'}`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    logTerminal(`[SYSTEM] Sample ${type.toUpperCase()} file generated and downloaded successfully.`);
+}
 
 // ----------------- ML BACKEND SCORING CALLS -----------------
 function calculateScore() {
@@ -321,104 +448,158 @@ function calculateScore() {
         if (!res.ok) throw new Error("FastAPI ML prediction service returned 500.");
         return res.json();
     })
-    .then(data => {
-        currentScore = Math.round(data.score);
-        const baselineExpected = Math.round(data.expected_value);
-
-        document.getElementById("baseline-expected-num").textContent = baselineExpected;
-
-        document.querySelector("[data-tab='tab-dashboard']").click();
-
-        document.getElementById("dashboard-score-num").textContent = currentScore;
-        
-        let ratingText = "AVERAGE";
-        let ratingColor = "var(--warning)";
-        let ratingBg = "rgba(255, 183, 3, 0.15)";
-        let scoreColor = "var(--warning)";
-
-        if (currentScore >= 800) {
-            ratingText = "OUTSTANDING";
-            ratingColor = "var(--success)";
-            ratingBg = "rgba(46, 196, 182, 0.15)";
-            scoreColor = "var(--success)";
-        } else if (currentScore >= 700) {
-            ratingText = "EXCELLENT";
-            ratingColor = "#3b82f6";
-            ratingBg = "rgba(59, 130, 246, 0.15)";
-            scoreColor = "#3b82f6";
-        } else if (currentScore >= 550) {
-            ratingText = "GOOD";
-            ratingColor = "#a855f7";
-            ratingBg = "rgba(168, 85, 247, 0.15)";
-            scoreColor = "#a855f7";
-        } else {
-            ratingText = "POOR/RISK";
-            ratingColor = "var(--danger)";
-            ratingBg = "rgba(255, 0, 84, 0.15)";
-            scoreColor = "var(--danger)";
-        }
-
-        const ratingEl = document.getElementById("dashboard-score-rating");
-        ratingEl.textContent = ratingText;
-        ratingEl.style.color = ratingColor;
-        ratingEl.style.backgroundColor = ratingBg;
-
-        const fillPercent = currentScore / 1000.0;
-        const dashOffset = 251.2 - (251.2 * fillPercent);
-        const gaugeFill = document.getElementById("dashboard-gauge-fill");
-        gaugeFill.style.strokeDashoffset = dashOffset;
-        gaugeFill.style.stroke = scoreColor;
-
-        let liquidityVal = Math.round(Math.max(0, Math.min(100, (profile.bank_balance * 8 + (profile.upi_count / 10)) * 1.1)));
-        let complianceVal = Math.round(Math.max(0, Math.min(100, (profile.gst_compliance * 50 + profile.epfo_compliance * 50))));
-        let stabilityVal = Math.round(Math.max(0, Math.min(100, (profile.gst_revenue * 1.5 + (profile.epfo_employees / 2)) * 1.2)));
-        let fraudVal = (consentGst && consentUpi && consentAa) ? 100 : 50;
-
-        document.getElementById("score-val-liquidity").textContent = `${liquidityVal}/100`;
-        document.getElementById("score-val-compliance").textContent = `${complianceVal}/100`;
-        document.getElementById("score-val-stability").textContent = `${stabilityVal}/100`;
-        document.getElementById("score-val-fraud").textContent = fraudVal === 100 ? "Perfect" : "High Risk";
-
-        updateProgressBar("bar-liquidity", liquidityVal);
-        updateProgressBar("bar-compliance", complianceVal);
-        updateProgressBar("bar-stability", stabilityVal);
-        updateProgressBar("bar-fraud", fraudVal);
-
-        const shapItems = [
-            { label: "GST Sales Vol", val: data.shap_values.gst_revenue },
-            { label: "GST Filing Consistency", val: data.shap_values.gst_compliance },
-            { label: "UPI Txn Frequency", val: data.shap_values.upi_count },
-            { label: "UPI Inflow Volatility", val: data.shap_values.upi_volatility },
-            { label: "EPFO Subscriber Size", val: data.shap_values.epfo_employees },
-            { label: "EPFO Pay Regularity", val: data.shap_values.epfo_compliance },
-            { label: "Bank Average Balance", val: data.shap_values.bank_balance }
-        ];
-
-        renderShapItems(shapItems);
-        logTerminal(`[AI ENGINE] Credit prediction complete. Score: ${currentScore}. Local SHAP weights loaded successfully.`);
-
-        const btnCallUli = document.getElementById("btn-call-uli");
-        btnCallUli.classList.remove("disabled", "completed");
-        btnCallUli.textContent = "GET Profile";
-        
-        const btnCallOcen = document.getElementById("btn-call-ocen");
-        btnCallOcen.classList.add("disabled");
-        btnCallOcen.classList.remove("completed");
-        btnCallOcen.disabled = true;
-
-        const btnDisburse = document.getElementById("btn-call-disburse");
-        btnDisburse.classList.add("disabled");
-        btnDisburse.classList.remove("completed");
-        btnDisburse.disabled = true;
-
-        const virtualCard = document.getElementById("virtual-credit-card");
-        virtualCard.classList.add("inactive");
-        virtualCard.classList.remove("active");
-        document.getElementById("cc-limit-val").textContent = "₹0.00";
-    })
-    .catch(err => {
-        logTerminal(`[ERROR] ML Engine API call failed: ${err.message}`);
+    .then(data => renderScoreDashboard(data, profile))
+    .catch(() => {
+        // Run local model fallback on error (e.g. backend offline / static hosting)
+        const localAttribution = runClientSideScore(profile);
+        renderScoreDashboard(localAttribution, profile);
     });
+}
+
+function runClientSideScore(profile) {
+    logTerminal(`[SYSTEM] FastAPI offline (Static Mode). Launching browser client-side ML scoring fallback...`);
+    const baseScore = 500;
+    
+    // Exact mapping of backend weights
+    let dGstRev = (profile.gst_revenue / 50.0) * 120 - 30;
+    let dGstFile = (profile.gst_compliance - 0.5) * 100;
+    let dUpiCount = (profile.upi_count / 1000.0) * 60 - 15;
+    let dUpiVol = -profile.upi_volatility * 60;
+    let dEpfoStaff = (profile.epfo_employees / 100.0) * 50 - 10;
+    let dEpfoDep = (profile.epfo_compliance - 0.4) * 50;
+    let dBankBal = (profile.bank_balance / 10.0) * 80 - 20;
+
+    // Apply Consent penalties
+    const consentGst = document.getElementById("chk-gst").checked;
+    const consentUpi = document.getElementById("chk-upi").checked;
+    const consentEpfo = document.getElementById("chk-epfo").checked;
+    const consentAa = document.getElementById("chk-aa").checked;
+
+    let consentPenalty = 0;
+    if (!consentGst) consentPenalty -= 100;
+    if (!consentUpi) consentPenalty -= 80;
+    if (!consentEpfo) consentPenalty -= 50;
+    if (!consentAa) consentPenalty -= 120;
+
+    let calculated = baseScore + dGstRev + dGstFile + dUpiCount + dUpiVol + dEpfoStaff + dEpfoDep + dBankBal + consentPenalty;
+    let score = Math.max(300, Math.min(1000, Math.round(calculated)));
+
+    return {
+        score: score,
+        expected_value: 669,
+        shap_values: {
+            gst_revenue: dGstRev,
+            gst_compliance: dGstFile,
+            upi_count: dUpiCount,
+            upi_volatility: dUpiVol,
+            epfo_employees: dEpfoStaff,
+            epfo_compliance: dEpfoDep,
+            bank_balance: dBankBal
+        }
+    };
+}
+
+function renderScoreDashboard(data, profile) {
+    currentScore = Math.round(data.score);
+    const baselineExpected = Math.round(data.expected_value);
+
+    document.getElementById("baseline-expected-num").textContent = baselineExpected;
+
+    // Route to dashboard tab
+    document.querySelector("[data-tab='tab-dashboard']").click();
+
+    // Update score UI
+    document.getElementById("dashboard-score-num").textContent = currentScore;
+    
+    let ratingText = "AVERAGE";
+    let ratingColor = "var(--warning)";
+    let ratingBg = "rgba(255, 183, 3, 0.15)";
+    let scoreColor = "var(--warning)";
+
+    if (currentScore >= 800) {
+        ratingText = "OUTSTANDING";
+        ratingColor = "var(--success)";
+        ratingBg = "rgba(46, 196, 182, 0.15)";
+        scoreColor = "var(--success)";
+    } else if (currentScore >= 700) {
+        ratingText = "EXCELLENT";
+        ratingColor = "#3b82f6";
+        ratingBg = "rgba(59, 130, 246, 0.15)";
+        scoreColor = "#3b82f6";
+    } else if (currentScore >= 550) {
+        ratingText = "GOOD";
+        ratingColor = "#a855f7";
+        ratingBg = "rgba(168, 85, 247, 0.15)";
+        scoreColor = "#a855f7";
+    } else {
+        ratingText = "POOR/RISK";
+        ratingColor = "var(--danger)";
+        ratingBg = "rgba(255, 0, 84, 0.15)";
+        scoreColor = "var(--danger)";
+    }
+
+    const ratingEl = document.getElementById("dashboard-score-rating");
+    ratingEl.textContent = ratingText;
+    ratingEl.style.color = ratingColor;
+    ratingEl.style.backgroundColor = ratingBg;
+
+    const fillPercent = currentScore / 1000.0;
+    const dashOffset = 251.2 - (251.2 * fillPercent);
+    const gaugeFill = document.getElementById("dashboard-gauge-fill");
+    gaugeFill.style.strokeDashoffset = dashOffset;
+    gaugeFill.style.stroke = scoreColor;
+
+    // Consent check for sub-dimensions
+    const consentGst = document.getElementById("chk-gst").checked;
+    const consentUpi = document.getElementById("chk-upi").checked;
+    const consentAa = document.getElementById("chk-aa").checked;
+
+    let liquidityVal = Math.round(Math.max(0, Math.min(100, (profile.bank_balance * 8 + (profile.upi_count / 10)) * 1.1)));
+    let complianceVal = Math.round(Math.max(0, Math.min(100, (profile.gst_compliance * 50 + profile.epfo_compliance * 50))));
+    let stabilityVal = Math.round(Math.max(0, Math.min(100, (profile.gst_revenue * 1.5 + (profile.epfo_employees / 2)) * 1.2)));
+    let fraudVal = (consentGst && consentUpi && consentAa) ? 100 : 50;
+
+    document.getElementById("score-val-liquidity").textContent = `${liquidityVal}/100`;
+    document.getElementById("score-val-compliance").textContent = `${complianceVal}/100`;
+    document.getElementById("score-val-stability").textContent = `${stabilityVal}/100`;
+    document.getElementById("score-val-fraud").textContent = fraudVal === 100 ? "Perfect" : "High Risk";
+
+    updateProgressBar("bar-liquidity", liquidityVal);
+    updateProgressBar("bar-compliance", complianceVal);
+    updateProgressBar("bar-stability", stabilityVal);
+    updateProgressBar("bar-fraud", fraudVal);
+
+    const shapItems = [
+        { label: "GST Sales Vol", val: data.shap_values.gst_revenue },
+        { label: "GST Filing Consistency", val: data.shap_values.gst_compliance },
+        { label: "UPI Txn Frequency", val: data.shap_values.upi_count },
+        { label: "UPI Inflow Volatility", val: data.shap_values.upi_volatility },
+        { label: "EPFO Subscriber Size", val: data.shap_values.epfo_employees },
+        { label: "EPFO Pay Regularity", val: data.shap_values.epfo_compliance },
+        { label: "Bank Average Balance", val: data.shap_values.bank_balance }
+    ];
+
+    renderShapItems(shapItems);
+    logTerminal(`[SYSTEM] Credit prediction processed successfully. Score: ${currentScore}. SHAP local values rendered.`);
+
+    const btnCallUli = document.getElementById("btn-call-uli");
+    btnCallUli.classList.remove("disabled", "completed");
+    btnCallUli.textContent = "GET Profile";
+    
+    const btnCallOcen = document.getElementById("btn-call-ocen");
+    btnCallOcen.classList.add("disabled");
+    btnCallOcen.classList.remove("completed");
+    btnCallOcen.disabled = true;
+
+    const btnDisburse = document.getElementById("btn-call-disburse");
+    btnDisburse.classList.add("disabled");
+    btnDisburse.classList.remove("completed");
+    btnDisburse.disabled = true;
+
+    const virtualCard = document.getElementById("virtual-credit-card");
+    virtualCard.classList.add("inactive");
+    virtualCard.classList.remove("active");
+    document.getElementById("cc-limit-val").textContent = "₹0.00";
 }
 
 function updateProgressBar(id, value) {

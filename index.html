@@ -1,0 +1,448 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CrediCard-MSME | Financial Health Card</title>
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <!-- Custom Stylesheet -->
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <!-- Radial aura blobs for premium design background -->
+    <div class="aura-blob blob-1"></div>
+    <div class="aura-blob blob-2"></div>
+    <div class="aura-blob blob-3"></div>
+
+    <div class="app-container">
+        <!-- Sidebar Navigation -->
+        <aside class="sidebar">
+            <div class="brand">
+                <div class="brand-logo">
+                    <i data-lucide="shield-check"></i>
+                </div>
+                <div>
+                    <h2>CrediCard-MSME</h2>
+                    <span class="badge-dpi">DPI - ULI / OCEN</span>
+                </div>
+            </div>
+
+            <nav class="sidebar-nav">
+                <button class="nav-item active" data-tab="tab-simulator">
+                    <i data-lucide="sliders"></i>
+                    <span>MSME Onboarding</span>
+                </button>
+                <button class="nav-item" data-tab="tab-dashboard">
+                    <i data-lucide="layout-dashboard"></i>
+                    <span>Financial Health Card</span>
+                </button>
+                <button class="nav-item" data-tab="tab-apis">
+                    <i data-lucide="terminal"></i>
+                    <span>ULI / OCEN Hub</span>
+                </button>
+            </nav>
+
+            <div class="sidebar-footer">
+                <div class="team-card">
+                    <div class="team-badge">Team Doremon</div>
+                    <div class="team-members">
+                        <p>Anandhappriya (Leader)</p>
+                        <p>Hirthik Balaji C</p>
+                    </div>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Main Content Area -->
+        <main class="main-content">
+            <!-- Header -->
+            <header class="main-header">
+                <div class="header-title">
+                    <h1 id="page-title">MSME Profile Simulator</h1>
+                    <p id="page-desc">Simulate alternate data points (GST, UPI, EPFO, bank statements) to calculate a dynamic Financial Health Score.</p>
+                </div>
+                <div class="header-actions">
+                    <button id="theme-toggle" class="btn-theme-toggle" title="Toggle Theme">
+                        <i data-lucide="moon"></i>
+                    </button>
+                    <div class="live-status">
+                        <span class="status-dot green"></span>
+                        <span>ULI Sandbox Connected</span>
+                    </div>
+                </div>
+            </header>
+
+            <!-- TAB 1: Onboarding, Simulation & File Upload -->
+            <section id="tab-simulator" class="tab-content active">
+                <div class="grid-2col">
+                    <!-- Column 1: Manual Data Simulators -->
+                    <div class="card glass">
+                        <div class="card-header">
+                            <i data-lucide="sliders-horizontal" class="icon-accent"></i>
+                            <h3>Alternate Data Simulators</h3>
+                        </div>
+                        <div class="card-body">
+                            <!-- Section: GST -->
+                            <div class="sim-section">
+                                <h4 class="sim-title"><i data-lucide="receipt"></i> GST Compliance</h4>
+                                <div class="form-group">
+                                    <label>Monthly Revenue (GST Sales)</label>
+                                    <div class="slider-container">
+                                        <input type="range" id="sim-gst-revenue" min="2" max="50" value="18" step="0.5">
+                                        <span class="slider-val" id="val-gst-revenue">₹18.0 Lakhs</span>
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <label>GST Filing Consistency</label>
+                                    <select id="sim-gst-filing">
+                                        <option value="perfect" selected>Perfect (100% on time)</option>
+                                        <option value="good">Good (>90% on time)</option>
+                                        <option value="average">Average (70-90% on time)</option>
+                                        <option value="poor">Poor (<70% on time / defaults)</option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <!-- Section: UPI -->
+                            <div class="sim-section">
+                                <h4 class="sim-title"><i data-lucide="smartphone"></i> UPI Cash Flows</h4>
+                                <div class="form-group">
+                                    <label>Monthly Transactions Count</label>
+                                    <div class="slider-container">
+                                        <input type="range" id="sim-upi-count" min="10" max="1000" value="350" step="10">
+                                        <span class="slider-val" id="val-upi-count">350 txn</span>
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <label>Cash Flow Volatility</label>
+                                    <select id="sim-upi-volatility">
+                                        <option value="low" selected>Low (Steady monthly inflows)</option>
+                                        <option value="medium">Medium (Moderate seasonal drops)</option>
+                                        <option value="high">High (Extremely erratic cash flow)</option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <!-- Section: EPFO -->
+                            <div class="sim-section">
+                                <h4 class="sim-title"><i data-lucide="users"></i> EPFO Registry</h4>
+                                <div class="form-group">
+                                    <label>Active Registered Employees</label>
+                                    <div class="slider-container">
+                                        <input type="range" id="sim-epfo-employees" min="0" max="100" value="24">
+                                        <span class="slider-val" id="val-epfo-employees">24 staff</span>
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <label>Provident Fund Deposit Regularity</label>
+                                    <select id="sim-epfo-deposit">
+                                        <option value="regular" selected>Regular Monthly Contributions</option>
+                                        <option value="irregular">Irregular/Delayed Contributions</option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <!-- Section: Bank Account -->
+                            <div class="sim-section">
+                                <h4 class="sim-title"><i data-lucide="landmark"></i> Bank Account Aggregator</h4>
+                                <div class="form-group">
+                                    <label>Average Daily Balance (ADB)</label>
+                                    <div class="slider-container">
+                                        <input type="range" id="sim-bank-balance" min="0.5" max="10" value="3.5" step="0.1">
+                                        <span class="slider-val" id="val-bank-balance">₹3.5 Lakhs</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Column 2: File Uploads & Consent -->
+                    <div class="flex-column" style="gap: 1.5rem;">
+                        <!-- File Upload Ingestion Card -->
+                        <div class="card glass">
+                            <div class="card-header">
+                                <i data-lucide="upload-cloud" class="icon-accent"></i>
+                                <h3>Ingest Alternate Data Files</h3>
+                            </div>
+                            <div class="card-body uploads-body">
+                                <p class="consent-intro">Instead of sliding values manually, upload actual structured files to trigger the ingestion parsers:</p>
+                                
+                                <div class="upload-item">
+                                    <div class="upload-item-header">
+                                        <span><i data-lucide="receipt"></i> GST Invoices (JSON)</span>
+                                        <button class="btn-sample-download" onclick="downloadSample('gst')"><i data-lucide="download"></i> Sample</button>
+                                    </div>
+                                    <input type="file" id="file-gst" accept=".json" class="file-input">
+                                </div>
+
+                                <div class="upload-item mt-3">
+                                    <div class="upload-item-header">
+                                        <span><i data-lucide="smartphone"></i> UPI Statement (CSV)</span>
+                                        <button class="btn-sample-download" onclick="downloadSample('upi')"><i data-lucide="download"></i> Sample</button>
+                                    </div>
+                                    <input type="file" id="file-upi" accept=".csv" class="file-input">
+                                </div>
+
+                                <div class="upload-item mt-3">
+                                    <div class="upload-item-header">
+                                        <span><i data-lucide="users"></i> EPFO Registry (JSON)</span>
+                                        <button class="btn-sample-download" onclick="downloadSample('epfo')"><i data-lucide="download"></i> Sample</button>
+                                    </div>
+                                    <input type="file" id="file-epfo" accept=".json" class="file-input">
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Consent & Calculations -->
+                        <div class="card glass flex-column flex-between" style="flex-grow: 1;">
+                            <div>
+                                <div class="card-header">
+                                    <i data-lucide="key-round" class="icon-accent"></i>
+                                    <h3>Consent-Driven AA Sandbox</h3>
+                                </div>
+                                <div class="card-body consent-body">
+                                    <div class="consent-item">
+                                        <input type="checkbox" id="chk-gst" checked>
+                                        <label for="chk-gst">
+                                            <strong>GSTN Inward/Outward Ledger</strong>
+                                            <span>Reads sales logs, B2B invoices, and GSTR-3B filings.</span>
+                                        </label>
+                                    </div>
+                                    <div class="consent-item">
+                                        <input type="checkbox" id="chk-upi" checked>
+                                        <label for="chk-upi">
+                                            <strong>UPI Transaction Registry</strong>
+                                            <span>Analyzes customer payment velocity and transaction counts.</span>
+                                        </label>
+                                    </div>
+                                    <div class="consent-item">
+                                        <input type="checkbox" id="chk-epfo" checked>
+                                        <label for="chk-epfo">
+                                            <strong>EPFO Employee & Wages Dashboard</strong>
+                                            <span>Verifies business size, monthly payroll regularity, and staff count.</span>
+                                        </label>
+                                    </div>
+                                    <div class="consent-item">
+                                        <input type="checkbox" id="chk-aa" checked>
+                                        <label for="chk-aa">
+                                            <strong>Account Aggregator Bank Linkage</strong>
+                                            <span>Pulls 12 months of average daily balance and debt service logs.</span>
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="onboarding-action">
+                                <button id="btn-calculate" class="btn-primary">
+                                    <i data-lucide="zap"></i>
+                                    <span>Calculate Health Score</span>
+                                </button>
+                                <p class="btn-note">Calculates the credit score dynamically on our Trained ML Backend.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- TAB 2: Financial Health Card & Credit Dashboard -->
+            <section id="tab-dashboard" class="tab-content">
+                <!-- Score Summary Cards -->
+                <div class="dashboard-grid-top">
+                    <!-- radial credit score gauge -->
+                    <div class="card glass text-center flex-column flex-center relative">
+                        <h3>MSME Financial Health Card</h3>
+                        <div class="gauge-container">
+                            <svg class="gauge" viewBox="0 0 100 100">
+                                <circle class="gauge-bg" cx="50" cy="50" r="40"></circle>
+                                <circle class="gauge-fill" id="dashboard-gauge-fill" cx="50" cy="50" r="40" stroke-dasharray="251.2" stroke-dashoffset="251.2"></circle>
+                            </svg>
+                            <div class="gauge-text">
+                                <span class="gauge-num" id="dashboard-score-num">--</span>
+                                <span class="gauge-max">/ 1000</span>
+                                <span class="gauge-rating" id="dashboard-score-rating">AWAITING CALCULATION</span>
+                            </div>
+                        </div>
+                        <p class="score-desc" id="msme-legal-title">Doremon Crafts Private Limited</p>
+                    </div>
+
+                    <!-- Dimension Scores -->
+                    <div class="card glass">
+                        <div class="card-header">
+                            <i data-lucide="bar-chart-3" class="icon-accent"></i>
+                            <h3>Sub-Dimension Scores</h3>
+                        </div>
+                        <div class="card-body">
+                            <div class="metric-progress-group">
+                                <div class="progress-label">
+                                    <span>Liquidity & Cash Flow</span>
+                                    <span id="score-val-liquidity">--/100</span>
+                                </div>
+                                <div class="progress-bar-container">
+                                    <div class="progress-bar green" id="bar-liquidity" style="width: 0%;"></div>
+                                </div>
+                            </div>
+
+                            <div class="metric-progress-group">
+                                <div class="progress-label">
+                                    <span>Statutory Compliance</span>
+                                    <span id="score-val-compliance">--/100</span>
+                                </div>
+                                <div class="progress-bar-container">
+                                    <div class="progress-bar green" id="bar-compliance" style="width: 0%;"></div>
+                                </div>
+                            </div>
+
+                            <div class="metric-progress-group">
+                                <div class="progress-label">
+                                    <span>Operational Stability</span>
+                                    <span id="score-val-stability">--/100</span>
+                                </div>
+                                <div class="progress-bar-container">
+                                    <div class="progress-bar green" id="bar-stability" style="width: 0%;"></div>
+                                </div>
+                            </div>
+
+                            <div class="metric-progress-group">
+                                <div class="progress-label">
+                                    <span>Fraud & Risk Risk Shield</span>
+                                    <span id="score-val-fraud">--</span>
+                                </div>
+                                <div class="progress-bar-container">
+                                    <div class="progress-bar green" id="bar-fraud" style="width: 0%;"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Graphs and XAI -->
+                <div class="grid-2col mt-4">
+                    <!-- Chart -->
+                    <div class="card glass">
+                        <div class="card-header">
+                            <i data-lucide="trending-up" class="icon-accent"></i>
+                            <h3>Cash Inflows vs. Outflows (UPI & GST)</h3>
+                        </div>
+                        <div class="card-body chart-body">
+                            <canvas id="cashFlowChart"></canvas>
+                        </div>
+                    </div>
+
+                    <!-- Explainable AI (SHAP) -->
+                    <div class="card glass">
+                        <div class="card-header">
+                            <i data-lucide="help-circle" class="icon-accent"></i>
+                            <h3>Explainable AI (SHAP Local Explanation)</h3>
+                        </div>
+                        <div class="card-body">
+                            <p class="xai-intro">SHAP values calculated by our model engine detail exactly how much each parameter shifted the MSME score from the training average (<span id="baseline-expected-num">669</span>).</p>
+                            
+                            <div class="shap-list" id="shap-container">
+                                <p style="text-align: center; color: var(--text-dark); margin-top: 2rem;">Run calculation to show SHAP attributions.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- TAB 3: ULI/OCEN Integration Hub -->
+            <section id="tab-apis" class="tab-content">
+                <div class="grid-2col">
+                    <!-- ULI/OCEN Flow Actions -->
+                    <div class="card glass flex-column flex-between">
+                        <div>
+                            <div class="card-header">
+                                <i data-lucide="workflow" class="icon-accent"></i>
+                                <h3>API Protocol Integrations</h3>
+                            </div>
+                            <div class="card-body">
+                                <p class="api-intro">Directly route the calculated Financial Health Score into the Unified Lending Interface (ULI) and Open Credit Enablement Network (OCEN) pipelines.</p>
+                                
+                                <div class="api-step-card">
+                                    <div class="api-step-num">Step 1</div>
+                                    <div class="api-step-info">
+                                        <h4>Call ULI Data Access Layer</h4>
+                                        <p>Underwriter pulls the aggregated consent records (GST, EPFO, AA) via ULI gateway.</p>
+                                    </div>
+                                    <button class="btn-api-call" id="btn-call-uli">GET Profile</button>
+                                </div>
+
+                                <div class="api-step-card mt-3">
+                                    <div class="api-step-num">Step 2</div>
+                                    <div class="api-step-info">
+                                        <h4>Sanction Loan Offer via OCEN</h4>
+                                        <p>Compute credit limit and post loan agreement parameters back to OCEN endpoint.</p>
+                                    </div>
+                                    <button class="btn-api-call disabled" id="btn-call-ocen" disabled>POST Offer</button>
+                                </div>
+
+                                <div class="api-step-card mt-3">
+                                    <div class="api-step-num">Step 3</div>
+                                    <div class="api-step-info">
+                                        <h4>Provision Pre-Approved Biz Grow Card</h4>
+                                        <p>Provide virtual credit card and trigger instant disbursement to UPI handle.</p>
+                                    </div>
+                                    <button class="btn-api-call disabled" id="btn-call-disburse" disabled>Disburse</button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Virtual Credit Card Rendering -->
+                        <div class="card-preview-container text-center">
+                            <div class="credit-card inactive" id="virtual-credit-card">
+                                <div class="cc-bg-pattern"></div>
+                                <div class="cc-header">
+                                    <span class="cc-logo">IDBI BIZ GROW</span>
+                                    <i data-lucide="contactless" class="cc-contactless"></i>
+                                </div>
+                                <div class="cc-number">•••• •••• •••• 8820</div>
+                                <div class="cc-footer">
+                                    <div>
+                                        <div class="cc-label">CARDHOLDER</div>
+                                        <div class="cc-val" id="cc-holder-name">DOREMON CRAFTS</div>
+                                    </div>
+                                    <div>
+                                        <div class="cc-label">LIMIT (INR)</div>
+                                        <div class="cc-val" id="cc-limit-val">₹0.00</div>
+                                    </div>
+                                    <div>
+                                        <div class="cc-label">VALID THRU</div>
+                                        <div class="cc-val">12/28</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- API Raw Terminal Logs -->
+                    <div class="card glass">
+                        <div class="card-header flex-row flex-between">
+                            <div class="flex-row">
+                                <i data-lucide="code" class="icon-accent"></i>
+                                <h3>Real-Time Terminal API Logs</h3>
+                            </div>
+                            <button class="btn-secondary" id="btn-clear-logs">Clear Logs</button>
+                        </div>
+                        <div class="card-body terminal-body">
+                            <pre class="terminal" id="terminal-logs">
+[SYSTEM] CrediCard-MSME Sandbox initialized.
+[SYSTEM] Awaiting simulated user inputs from 'MSME Onboarding' tab.
+                            </pre>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <!-- Custom Script -->
+    <script src="app.js"></script>
+</body>
+</html>

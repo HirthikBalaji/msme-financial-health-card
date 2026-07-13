@@ -1,0 +1,25 @@
+Problem Statement 1: Digital Wealth Management
+Wealth management and advisory services remain fragmented and largely inaccessible to large number of customers. Absence of comprehensive, customer investment behaviour and spending habits limits the ability to provide timely, personalized, data-driven guidance. 
+
+Expected Outcome 
+Bank is looking for AI powered Digital Wealth management (Avatar Base) Application which integrates into the bank’s mobile application, to deliver personalized and scalable wealth advisory services through an intuitive digital interface.
+
+Problem Statement 2: Prospect Assist AI
+Bank’s retail lending relies on traditional metrics, resulting in low conversions and limited insight into customer intent. A data-driven approach is needed to identify eligible, quantifiable repayment capacity, genuinely interested prospects using transaction and behavioral insights. 
+
+Expected Outcome 
+The solution is expected to generate high‑quality leads with a conversion rate exceeding 30%, while also enabling accurate assessment of borrowers’ actual income levels to support prudent underwriting for loans such as Personal Loan, Home loan, Mortgage Loan, Auto Loan.
+
+Problem Statement 3: Financial Health Score
+Bank’s MSME credit evaluation relies on traditional financial documents, which many New-to-Credit (NTC) and New-to- Bank (NTB) enterprises lack or maintain inadequately. Despite availability of rich alternate data (GST, UPI, AA, EPFO, etc.), absence of a unified assessment framework leads to high rejection rates, missed viable borrowers, limited portfolio diversification, and slower financial inclusion progress. 
+
+Expected Outcome 
+Participants should design an AI/ML- driven MSME Financial Health Card that aggregates alternate data (GST, UPI, AA, EPFO, etc.), computes a multidimensional financial health score, visualizes strengths and risks, integrates with ULI/OCEN/AA ecosystems, enables near real-time credit assessment, and expands onboarding of credit-invisible MSMEs while improving portfolio quality.
+
+Problem Statement 4: Default Prediction Model
+The current capability is limited by low prediction accuracy in the range of 16 - 22%, dependent solely on structured data and fragmented methodologies across loan types and borrower segments. 
+
+Expected Outcome 
+The expected outcome is to develop a robust predictive solution that estimates the probability of default to identify potential stress in loans 12 months in advance, with accuracy improving to 90%. The solution should use both structured and unstructured data, apply suitable analytical methods for different loan types and borrower profiles and provide a common interpretation framework to ensure consistent, comparable and actionable
+
+

@@ -108,7 +108,24 @@ function initApp() {
     });
 
     setupApiSimulation();
+
+    // Handle URL parameters for automated testing & screenshot taking
+    const urlParams = new URLSearchParams(window.location.search);
+    const targetTab = urlParams.get("tab");
+    const autoCalc = urlParams.get("calc");
+    
+    if (autoCalc === "true") {
+        calculateScore();
+    }
+    
+    if (targetTab) {
+        const targetBtn = document.querySelector(`[data-tab="${targetTab}"]`);
+        if (targetBtn) {
+            targetBtn.click();
+        }
+    }
 }
+
 
 function setupSliders() {
     const sliders = [
